@@ -8,6 +8,9 @@ public class Date
     private int day;
     private int year; //a four digit number.
 
+    private static final int[] daysInMonth = 
+        { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
     public Date( )
     {
         this("January", 1, 1000);  // Could have used setDate instead
@@ -58,19 +61,25 @@ public class Date
         }
     }
 
-    public void setDate(String monthString, int day, int year)
-    {
-        if (dateOK(monthString, day, year))
-        {
-            this.month = monthString;
-            this.day = day;
-            this.year = year;
+    public Date setDate(String monthString, int day, int year) {
+        if (!monthOK(monthString)) {
+            return null;
         }
-        else
-        {
-            System.out.println("Fatal Error in setDate(String,int, int)");
-            System.exit(0);
+
+        int monthNumber = getMonthNumber(monthString);
+        int maxDay = daysInMonth[monthNumber - 1];
+        if (monthNumber == 2 && isLeapYear(year)) {
+            maxDay = 29;
         }
+
+        if (day < 1 || day > maxDay || year < 1000 || year > 9999) {
+            return null;
+        }
+
+        this.month = monthString;
+        this.day = day;
+        this.year = year;
+        return this;
     }
 
     public void setDate(int year)
@@ -252,13 +261,61 @@ public class Date
             return "Error"; //to keep the compiler happy
         }
     }
+
+    private int getMonthNumber(String monthString) {
+        switch (monthString) {
+            case "January": return 1;
+            case "February": return 2;
+            case "March": return 3;
+            case "April": return 4;
+            case "May": return 5;
+            case "June": return 6;
+            case "July": return 7;
+            case "August": return 8;
+            case "September": return 9;
+            case "October": return 10;
+            case "November": return 11;
+            case "December": return 12;
+            default: return 0;
+        }
+    }
+
+    private boolean isLeapYear(int year) {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+
+    public Date addOneDay() {
+        int monthNumber = getMonth();
+        int maxDay = daysInMonth[monthNumber - 1];
+        if (monthNumber == 2 && isLeapYear(year)) {
+            maxDay = 29;
+        }
+
+        int newDay = day + 1;
+        int newMonth = monthNumber;
+        int newYear = year;
+
+        if (newDay > maxDay) {
+            newDay = 1;
+            newMonth++;
+            if (newMonth > 12) {
+                newMonth = 1;
+                newYear++;
+            }
+        }
+
+        return new Date(newMonth, newDay, newYear);
+    }
+
     public static void main(String[] args) {
         System.out.println("Main in Date.");
         Date tester = new Date();
         System.out.println("tester is "+tester);
     }
-    Date addOneDay() {
-    	System.out.println("Date.addOneDay() is not yet implemented");
-		return null;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Date other = (Date) obj;
+        return day == other.day && year == other.year && month.equals(other.month);
     }
 }
